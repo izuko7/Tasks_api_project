@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,6 +8,9 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // Prisma 6 : décommente la ligne suivante
+  // url      = env("DATABASE_URL")
+  // Prisma 7 : l'URL va dans prisma.config.ts, laisse le bloc tel quel
 }
 
 enum Priority {
@@ -19,32 +20,35 @@ enum Priority {
 }
 
 model User {
-  id        String   @id
-  name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  tasks         Task[]
+  id            String    @id
+  name          String
+  email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
-  sessions      Session[]
-  accounts      Account[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tasks    Task[]
+  sessions Session[]
+  accounts Account[]
 
   @@map("user")
 }
 
 model Task {
-  id          String   @id
+  id          String   @id @default(cuid())
   title       String
   description String?
-  priority    Priority
+  priority    Priority @default(medium)
   completed   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("task")
 }
 
 model Session {
